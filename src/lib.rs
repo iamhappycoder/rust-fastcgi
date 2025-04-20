@@ -593,6 +593,37 @@ fn run_transport<F>(handler: F, transport: &mut Transport) where
     }
 }
 
+fn run_transport_once<F>(handler: F, transport: &mut Transport) where
+    F: Fn(Request) + Send + Sync + 'static {
+    let addrs: Option<HashSet<String>> = match std::env::var("FCGI_WEB_SERVER_ADDRS") {
+        Ok(value) => Some(value.split(',').map(|s| s.to_owned()).collect()),
+        Err(std::env::VarError::NotPresent) => None,
+        Err(e) => Err(e).unwrap(),
+    };
+    let handler = Arc::new(handler);
+    let sock = match transport.accept() {
+        Ok(sock) => sock,
+        Err(e) => panic!(e.to_string()),
+    };
+    let allow = match addrs {
+        Some(ref addrs) => match sock.peer() {
+            Ok(ref addr) => addrs.contains(addr),
+            Err(_) => false,
+        },
+        None => true,
+    };
+    if allow {
+        let handler = handler.clone();
+        let sock = Rc::new(sock);
+        let (request_id, role, _) = Request::begin(&sock).unwrap();
+        handler(Request::new(sock.clone(), request_id, role).unwrap());
+    }
+}
+
+pub fn run_once<F>(handler: F) where F: Fn(Request) + Send + Sync + 'static {
+    run_transport_once(handler, &mut Transport::new())
+}
+
 #[cfg(unix)]
 /// Runs as a FastCGI process with the given handler.
 ///

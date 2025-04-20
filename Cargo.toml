@@ -1,11 +1,11 @@
 [package]
 name = "fastcgi"
-version = "1.0.0"
-authors = ["Mohd Tarmizi Mohd Affandi"]
+version = "1.0.1"
+authors = ["Mohd Tarmizi Mohd Affandi", "Jasper V. Ferrer"]
 license = "MIT"
 description = "FastCGI library written in pure Rust"
 documentation = "https://docs.rs/fastcgi"
-repository = "https://github.com/mohtar/rust-fastcgi"
+repository = "https://github.com/iamhappycoder/rust-fastcgi"
 readme = "README.md"
 keywords = ["fastcgi", "web", "server", "protocol", "cgi"]
 
